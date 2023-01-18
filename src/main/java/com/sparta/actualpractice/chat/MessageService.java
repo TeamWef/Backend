@@ -3,6 +3,7 @@ package com.sparta.actualpractice.chat;
 import com.sparta.actualpractice.member.Member;
 import com.sparta.actualpractice.member.MemberRepository;
 import com.sparta.actualpractice.security.TokenProvider;
+import com.sparta.actualpractice.util.RedisPublisher;
 import com.sparta.actualpractice.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,9 @@ public class MessageService {
     private final TokenProvider tokenProvider;
     private final MemberRepository memberRepository;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisPublisher redisPublisher;
+
+    private int count = 0;
 
     @Transactional(readOnly = true)
     public ResponseEntity<?> readMessages(Long chatRoomId) {
@@ -43,14 +47,21 @@ public class MessageService {
 
         List<MessageResponseDto> messageResponseDtoList = new ArrayList<>();
         List<MessageResponseDto> tempDto1 = operations.get(MESSAGE, String.valueOf(chatRoomId));
-        List<MessageResponseDto> tempDto2 = messageRepository.findTop500ByChatRoomIdOrderByCreatedAtAsc(chatRoomId).stream().map(MessageResponseDto::new)
-                .collect(Collectors.toList());
 
-        if (tempDto1 != null) {
-            messageResponseDtoList.addAll(tempDto1);
+
+        if (count == 0) {
+
+            System.out.println("1234");
+
+            List<MessageResponseDto> tempDto2 = messageRepository.findTop500ByChatRoomIdOrderByCreatedAtAsc(chatRoomId).stream().map(MessageResponseDto::new)
+                    .collect(Collectors.toList());
+
+            operations.put(MESSAGE, Long.toString(chatRoomId), tempDto2);
+            tempDto1 = operations.get(MESSAGE, String.valueOf(chatRoomId));
+            count++;
+
         }
-
-        messageResponseDtoList.addAll(tempDto2);
+        messageResponseDtoList.addAll(tempDto1);
 
         return new ResponseEntity<>(messageResponseDtoList, HttpStatus.OK);
     }
