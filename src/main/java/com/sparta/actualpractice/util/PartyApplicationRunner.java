@@ -1,6 +1,8 @@
 package com.sparta.actualpractice.util;
 
 import com.sparta.actualpractice.chat.ChatRoom;
+import com.sparta.actualpractice.chat.MessageRepository;
+import com.sparta.actualpractice.chat.MessageResponseDto;
 import com.sparta.actualpractice.member.Member;
 import com.sparta.actualpractice.party.Party;
 import com.sparta.actualpractice.chat.ChatRoomRepository;
@@ -10,8 +12,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -22,6 +29,7 @@ public class PartyApplicationRunner implements ApplicationRunner {
     private final ChatRoomRepository chatRoomRepository;
     private final PartyRepository partyRepository;
     private final OauthUtil oauthUtil;
+
 
     @Value("${admin.password}")
     private String password;
